@@ -1,0 +1,9 @@
+*~
+*.elc
+*.#
+*.out
+*.strace
+*.o
+*.depend
+
+.cask/
