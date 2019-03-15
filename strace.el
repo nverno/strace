@@ -2,12 +2,11 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-06 20:27:10>
+;; Last modified: <2019-03-14 20:04:25>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/strace
 ;; Package-Requires: ((transient "0.1"))
 ;; Created: 12 October 2017
-;; Package-Version: 0.1.0
 
 ;; This file is not part of GNU Emacs.
 ;;
@@ -29,6 +28,9 @@
 ;;; Commentary:
 
 ;; Major mode to interact with strace output.
+;; TODO:
+;; - use transient popup to define and rerun strace
+;; - https://github.com/magit/transient
 
 ;;; Code:
 (require 'transient)
