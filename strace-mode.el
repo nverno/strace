@@ -118,6 +118,9 @@
   (setq-local font-lock-defaults '(strace-mode-font-lock-keywords))
   (view-mode-enter))
 
+;;;###autoload
+(add-to-list 'auto-mode-alist '("\\.strace\\'" . strace-mode))
+
 ;; -------------------------------------------------------------------
 ;;; Tree-sitter
 
