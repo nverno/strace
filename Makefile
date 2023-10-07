@@ -1,17 +1,31 @@
+SHELL  = /bin/bash
 CASK   = cask
 export EMACS ?= emacs
 EFLAGS = 
 TFLAGS = 
 
-EL     = $(filter-out %-autoloads.el, $(wildcard *.el))
-ELC    = ${EL:.el=.elc}
-PKG    = strace
-PKGDIR = $(shell EMACS=$(EMACS) $(CASK) package-directory)
+EL     =  $(filter-out %-autoloads.el, $(wildcard *.el))
+ELC    =  ${EL:.el=.elc}
+PKG    =  strace
+PKGDIR =  $(shell EMACS=$(EMACS) $(CASK) package-directory)
+TSDIR  ?= $(CURDIR)/tree-sitter-strace
+
+
+all: 
+	@
+
+tree-sitter: $(TSDIR)
+$(TSDIR):
+	@git clone --depth=1 https://github.com/sigmaSd/tree-sitter-strace
+	@printf "\e[1m\e[31mNote\e[22m\e[0m npm build can take a while\n" >&2
+	cd $(TSDIR) &&                                         \
+		npm --loglevel=info --progress=true install && \
+		npm run generate
+.PHONY: parse-%
+parse-%:
+	cd $(TSDIR) && npx tree-sitter parse $(TESTDIR)/$(subst parse-,,$@)
 
 .PHONY: deps compile clean test
-all: # ${ELC} ${PKG}-autoloads.el README.md
-	@echo ${PKGDIR}
-
 deps:
 	$(CASK) install
 	$(CASK) update
@@ -19,9 +33,6 @@ deps:
 
 compile: deps
 	$(CASK) build
-
-clean:
-	$(RM) ${ELC} *~
 
 test: ${PKGDIR}
 	${CASK} exec 
@@ -68,3 +79,6 @@ ${PKG}-autoloads.el: ${EL}
 .PHONY: clean
 clean:
 	$(RM) *~ *.elc ${PKG}-autoloads.el
+
+distclean: clean
+	$(RM) -rf $$(git ls-files --others --ignored --exclude-standard)

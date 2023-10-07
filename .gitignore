@@ -6,4 +6,5 @@
 *.o
 *.depend
 
+tree-sitter-strace
 .cask/
