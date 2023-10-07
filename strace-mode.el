@@ -1,7 +1,5 @@
 ;;; strace-mode.el --- Major mode for strace -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/strace
 ;; Version: 0.0.1
@@ -79,7 +77,7 @@
 (defun strace-align-equals (beg end)
   "Align equals from BEG to END or entire buffer if region isn't active."
   (interactive
-   (if (region-active-p) (car (region-bounds))
+   (if (region-active-p) (list (region-beginning) (region-end))
      (list (point-min) (point-max))))
   (let ((re "\\(\\s-+\\)=\\(\\s-+\\)")
         buffer-read-only)
@@ -90,14 +88,8 @@
   (interactive)
   (save-excursion
     (beginning-of-line)
-    (and (looking-at "[0-9]+\\s-*\\([a-z_]+\\)\(")
+    (and (looking-at "[0-9]*\\s-*\\([a-z_]+\\)\(")
          (man (concat "2 " (match-string 1))))))
-
-;; (defun strace-revert-buffer (compile-cmd)
-;;   (interactive
-;;    (list (let ((command (eval compile-command)))
-;;            (if current-prefix-arg (compilation-read-command command)
-;;              command)))))
 
 ;;; Keymap
 
@@ -126,9 +118,13 @@
 
 (require 'treesit nil t)
 
+(defvar strace-ts-mode--keywords
+  '("killed" "by" "exited" "with" "<unfinished ...>" "<..." "resumed>")
+  "Keywords for tree-sitter to font-lock in `strace-ts-mode'.")
+
 (defvar strace-ts-mode--feature-list
   '(( comment)
-    ( string error)
+    ( string error keyword)
     ( function variable property literal)
     ( operator delimiter bracket))
   "See `treesit-font-lock-feature-list'.")
@@ -140,20 +136,21 @@
    '((comment) @font-lock-comment-face)
 
    :language 'strace
+   :feature 'keyword
+   `([,@strace-ts-mode--keywords] @font-lock-keyword-face)
+
+   :language 'strace
    :feature 'error
    '((errorName) @font-lock-warning-face
      (errorDescription) @strace-error-description-face)
 
    :language 'strace
    :feature 'string
-   '((string) @font-lock-string-face
-     (exit _ @font-lock-string-face
-           (integer) @font-lock-number-face
-           _ @font-lock-string-face))
+   '((string) @font-lock-string-face)
 
    :language 'strace
    :feature 'function
-   '((syscall) @font-lock-function-name-face)
+   '((syscall) @font-lock-function-call-face)
 
    :language 'strace
    :feature 'property
@@ -170,12 +167,12 @@
    
    :language 'strace
    :feature 'operator
-   '(["=" "|" "=>" "~" "*" "&&"] @font-lock-operator-face
-     ["..." "?"] @font-lock-misc-punctuation-face)
+   '(["=" "|" "*" "&&" "=="] @font-lock-operator-face
+     ["+++" "---" "~" "..." "?"] @font-lock-misc-punctuation-face)
 
    :language 'strace
    :feature 'delimiter
-   '([","] @font-lock-delimiter-face)
+   '(["," "=>"] @font-lock-delimiter-face)
 
    :language 'strace
    :feature 'bracket
